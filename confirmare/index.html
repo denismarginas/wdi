@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="ro">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Confirmare participare - Nunta Denis&Ioana</title>
+    <link rel="icon" type="image/x-icon" href="assets/favicon.ico">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <style>
+        @font-face {
+            font-family: 'PrimaryFont';
+            src: url('font/PrimaryFont.ttf') format('truetype');
+            font-weight: normal;
+            font-style: normal;
+        }
+
+        @font-face {
+            font-family: 'SecondaryFont';
+            src: url('font/SecondaryFont.ttf') format('truetype');
+            font-weight: normal;
+            font-style: normal;
+        }
+
+        :root {
+            --font-primary: 'PrimaryFont', serif;
+            --font-secondary: 'SecondaryFont', serif;
+            --color-primary: #595959;
+            --color-primary-rgb: 89, 89, 89;
+            --color-secondary: #fefcf7;
+            --color-secondary-rgb: 254, 252, 247;
+            --color-tertiary: #fefcf7;
+            --color-tertiary-rgb: 255, 255, 255;
+        }
+
+        body {
+            font-family: var(--font-primary);
+            background: var(--color-secondary);
+            color: var(--color-primary);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 0 !important;
+            padding: 0 !important;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        .body-wrapper {
+            width: 100%;
+            height: 100%;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .form-container {
+            max-width: 500px;
+            width: 100%;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 18px;
+            line-height: 25px;
+            font-weight: 600;
+        }
+
+        .description {
+            font-size: 16px;
+            margin-bottom: 10px;
+            line-height: 24px;
+            font-weight: 400;
+        }
+
+        textarea {
+            width: 100%;
+            max-width: 100%;
+            height: 100px;
+            padding: 10px;
+            font-family: 'Forum', serif;
+            font-size: 18px;
+            line-height: 24px;
+            border: 1px solid var(--color-primary);
+            background: transparent;
+            color: var(--color-primary);
+            box-sizing: border-box;
+        }
+
+        .scale {
+            display: flex;
+            justify-content: flex-start;
+            margin-top: 10px;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .scale label {
+            cursor: pointer;
+        }
+
+        button {
+            margin-top: 25px;
+            padding: 10px 20px;
+            font-family: 'Forum', serif;
+            font-size: 18px;
+            background: transparent;
+            border: 1px solid var(--color-primary);
+            color: var(--color-primary);
+            cursor: pointer;
+            border-radius: 12px;
+        }
+
+        button:hover {
+            background: var(--color-primary);
+            color: var(--color-secondary);
+        }
+
+        .error {
+            color: red;
+            font-size: 14px;
+            margin-top: 5px;
+        }
+
+        .flower-container {
+            width: 30%;
+            height: 100%;
+            display: flex;
+        }
+
+        .flower-container img {
+            height: 100%;
+            object-fit: cover;
+            width: 100%;
+            object-position: right;
+        }
+
+        .content-container {
+            width: 70%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            display: flex;
+        }
+
+        textarea {
+            resize: none;
+            border-color: var(--color-primary);
+            color: var(--color-primary);
+            background-color: rgba(var(--color-secondary-rgb), 0.2);
+            backdrop-filter: blur(6px);
+            border-width: 1px;
+            border-style: solid;
+            height: 150px;
+            border-radius: 12px;
+            transition: all 0.3s ease-in-out;
+        }
+
+        textarea::placeholder {
+            opacity: 0.5;
+        }
+
+        textarea:hover,
+        textarea:focus {
+            outline-color: var(--color-primary);
+            outline-width: 1px;
+            border-radius: 4px;
+            background-color: rgba(var(--color-secondary-rgb), 0.5);
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease-in-out;
+        }
+
+        .form-container {
+            padding: 36px 30px;
+            background-color: rgba(var(--color-tertiary-rgb), 0.5);
+            box-shadow: 0 4px 30px rgba(var(--color-primary-rgb), 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            margin: 45px 15px;
+        }
+
+        .title-form {
+            font-size: 34px;
+            line-height: 38px;
+            margin: 0px;
+            padding: 0px;
+            font-family: var(--font-secondary);
+        }
+
+        .form-heading {
+            padding: 20px;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 20px;
+            border-radius: 12px;
+        }
+
+        @media (max-width: 768px) {
+            .body-wrapper {
+                flex-direction: column;
+                align-items: center;
+                gap: 10px;
+            }
+
+            .flower-container {
+                order: 2;
+                width: 100%;
+                height: 100%;
+                object-fit: cover;
+                object-position: top;
+                position: fixed;
+            }
+
+            .content-container {
+                order: 1;
+                width: 100%;
+                padding: 10px;
+            }
+
+            .form-container {
+                background-color: rgba(var(--color-tertiary-rgb), 0.8);
+                padding: 24px;
+            }
+
+        }
+    </style>
+</head>
+
+<body>
+    <div
+        style="width:100%;height:100%;position:fixed;background-color:rgba(var(--color-secondary-rgb), 0.2);background-image:url('assets/backgorund.webp');background-size:cover;background-position:center;background-repeat:no-repeat;z-index: -1;top:0;bottom: 0;left: 0;right: 0">
+    </div>
+    <div class="body-wrapper">
+        <div class="flower-container">
+            <img src="assets/flower-img.webp" alt="Flower">
+        </div>
+        <div class="content-container">
+            <div class="form-container">
+                <div class="form-heading">
+                    <h3 class="title-form ">Confirmare participare</h3>
+                    <h3 class="title-form ">Nunta Denis&Ioana</h3>
+                </div>
+
+
+                <form id="customForm">
+
+                    <div class="field-names">
+                        <label>
+                            Nume si Prenume
+                        </label>
+
+                        <div class="description">
+                            Va rugam introduceti numele cu prenume pentru fiecare invitat delimitat cu o virgula.<br>
+                            Exemplu: Popescu Ioan, Popescu Ana
+                        </div>
+
+                        <textarea id="names" placeholder="Nume si Prenume Participant(i)"></textarea>
+                        <div id="errorNames" class="error"></div>
+
+                    </div>
+                    <div class="field-number">
+                        <label style="margin-top:20px;">
+                            Numar Persoane
+                        </label>
+
+                        <div class="scale">
+
+                            <label><input type="radio" name="persons" value="1"> 1</label>
+                            <label><input type="radio" name="persons" value="2"> 2</label>
+                            <label><input type="radio" name="persons" value="3"> 3</label>
+                            <label><input type="radio" name="persons" value="4"> 4</label>
+                            <label><input type="radio" name="persons" value="5"> 5</label>
+                            <label><input type="radio" name="persons" value="6"> 6</label>
+                            <label><input type="radio" name="persons" value="7"> 7</label>
+                            <label><input type="radio" name="persons" value="8"> 8</label>
+                            <label><input type="radio" name="persons" value="9"> 9</label>
+
+                        </div>
+
+                        <div id="errorPersons" class="error"></div>
+                    </div>
+
+
+                    <button type="submit">
+                        Trimite confirmarea
+                    </button>
+
+                </form>
+
+            </div>
+        </div>
+    </div>
+
+
+
+
+    <script>
+
+        // REPLACE WITH YOUR REAL ENTRY IDs
+        const ENTRY_NAMES = "entry.561222296";
+        const ENTRY_PERSONS = "entry.273953927";
+
+        const FORM_ACTION = "https://docs.google.com/forms/d/e/1FAIpQLSckS0S1wChUyuuAHOv56s9SseUFfCq6bHkjn1PVcc_wbYxCSg/formResponse";
+
+        document.getElementById("customForm").addEventListener("submit", function (e) {
+
+            e.preventDefault();
+
+            const names = document.getElementById("names").value.trim();
+            const persons = document.querySelector('input[name="persons"]:checked');
+
+            let valid = true;
+
+            document.getElementById("errorNames").innerText = "";
+            document.getElementById("errorPersons").innerText = "";
+
+            if (names === "") {
+                document.getElementById("errorNames").innerText = "Acest camp este obligatoriu.";
+                valid = false;
+            }
+
+            if (!persons) {
+                document.getElementById("errorPersons").innerText = "Selectati numarul de persoane.";
+                valid = false;
+            }
+
+            if (!valid) return;
+
+
+            // Create hidden form and submit automatically
+            const form = document.createElement("form");
+            form.method = "POST";
+            form.action = FORM_ACTION;
+            form.target = "_self";
+
+            const inputNames = document.createElement("input");
+            inputNames.type = "hidden";
+            inputNames.name = ENTRY_NAMES;
+            inputNames.value = names;
+
+            const inputPersons = document.createElement("input");
+            inputPersons.type = "hidden";
+            inputPersons.name = ENTRY_PERSONS;
+            inputPersons.value = persons.value;
+
+            form.appendChild(inputNames);
+            form.appendChild(inputPersons);
+
+            document.body.appendChild(form);
+
+            form.submit();
+
+        });
+
+    </script>
+
+
+</body>
+
+</html>
