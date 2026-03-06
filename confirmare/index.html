@@ -121,7 +121,7 @@
         }
 
         .error {
-            color: red;
+            color: rgb(238, 37, 37);
             font-size: 14px;
             margin-top: 5px;
         }
@@ -287,6 +287,10 @@
 
                         <div id="errorPersons" class="error"></div>
                     </div>
+                    <div style="display:none;">
+                        <label>Ha ha </label>
+                        <input type="text" id="website" name="website">
+                    </div>
 
 
                     <button type="submit">
@@ -294,72 +298,85 @@
                     </button>
 
                 </form>
-
+                <div style="margin-top: 10px;">
+                    <a href="program.html"
+                        style="margin-top: 20px; display: block;  text-decoration: none; color: var(--color-primary); font-weight: 600; ">
+                        Programul nunții
+                    </a>
+                </div>
             </div>
+
         </div>
     </div>
 
 
 
-
     <script>
+        (function () {
 
-        // REPLACE WITH YOUR REAL ENTRY IDs
-        const ENTRY_NAMES = "entry.561222296";
-        const ENTRY_PERSONS = "entry.273953927";
+            const _0x1 = ["entry.561222296", "entry.273953927"];
+            const _0x2 = "https://docs.google.com/forms/d/e/1FAIpQLSckS0S1wChUyuuAHOv56s9SseUFfCq6bHkjn1PVcc_wbYxCSg/formResponse";
 
-        const FORM_ACTION = "https://docs.google.com/forms/d/e/1FAIpQLSckS0S1wChUyuuAHOv56s9SseUFfCq6bHkjn1PVcc_wbYxCSg/formResponse";
+            const _g = (x) => document.getElementById(x);
+            const _q = (x) => document.querySelector(x);
 
-        document.getElementById("customForm").addEventListener("submit", function (e) {
+            _g("customForm")["addEventListener"]("submit", function (e) {
 
-            e.preventDefault();
+                e["preventDefault"]();
 
-            const names = document.getElementById("names").value.trim();
-            const persons = document.querySelector('input[name="persons"]:checked');
+                let _v = true;
 
-            let valid = true;
+                let _n = _g("names")["value"]["trim"]();
+                let _p = _q('input[name="persons"]:checked');
+                let _w = _g("website")["value"];
 
-            document.getElementById("errorNames").innerText = "";
-            document.getElementById("errorPersons").innerText = "";
+                _g("errorNames")["innerText"] = "";
+                _g("errorPersons")["innerText"] = "";
 
-            if (names === "") {
-                document.getElementById("errorNames").innerText = "Acest camp este obligatoriu.";
-                valid = false;
-            }
+                if (_w !== "") return;
 
-            if (!persons) {
-                document.getElementById("errorPersons").innerText = "Selectati numarul de persoane.";
-                valid = false;
-            }
+                !_n && (_g("errorNames")["innerText"] = "Acest camp este obligatoriu.", _v = false);
+                !_p && (_g("errorPersons")["innerText"] = "Selectati numarul de persoane.", _v = false);
 
-            if (!valid) return;
+                if (!_v) return;
 
+                let _f = document["createElement"]("form");
+                _f["method"] = "POST";
+                _f["action"] = _0x2;
+                _f["target"] = "_self";
 
-            // Create hidden form and submit automatically
-            const form = document.createElement("form");
-            form.method = "POST";
-            form.action = FORM_ACTION;
-            form.target = "_self";
+                [["hidden", _0x1[0], _n], ["hidden", _0x1[1], _p["value"]]]
+                    .forEach(d => {
+                        let i = document["createElement"]("input");
+                        i["type"] = d[0];
+                        i["name"] = d[1];
+                        i["value"] = d[2];
+                        _f["appendChild"](i);
+                    });
 
-            const inputNames = document.createElement("input");
-            inputNames.type = "hidden";
-            inputNames.name = ENTRY_NAMES;
-            inputNames.value = names;
+                document["body"]["appendChild"](_f);
+                _f["submit"]();
 
-            const inputPersons = document.createElement("input");
-            inputPersons.type = "hidden";
-            inputPersons.name = ENTRY_PERSONS;
-            inputPersons.value = persons.value;
+            });
 
-            form.appendChild(inputNames);
-            form.appendChild(inputPersons);
-
-            document.body.appendChild(form);
-
-            form.submit();
+        })();
+    </script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            document.addEventListener("contextmenu", function (e) {
+                e.preventDefault();
+            });
+            document.addEventListener("keydown", function (e) {
+                if (
+                    e.key === "F12" ||
+                    (e.ctrlKey && e.shiftKey && ["I", "J", "C"].includes(e.key)) ||
+                    (e.ctrlKey && e.key === "U")
+                ) {
+                    e.preventDefault();
+                }
+            });
 
         });
-
     </script>
 
 
