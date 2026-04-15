@@ -24,15 +24,22 @@
         .img-overlay {
             position: fixed;
             z-index: 0;
-            object-fit: cover;
+            width: 100%;
+            height: 800px;
+            top: 0;
+            left: 0;
+            overflow: hidden;
+        }
+
+        .img-overlay img {
             width: 100%;
             height: 100%;
-            width: 100vw;
-            height: 100dvh;
-            top: 0;
-            bottom: 0;
-            left: 0;
-            right: 0;
+            object-fit: cover;
+        }
+
+        .img-overlay {
+            -webkit-mask-image: linear-gradient(to bottom, black 70%, transparent 100%);
+            mask-image: linear-gradient(to bottom, black 70%, transparent 100%);
         }
 
         .content-over {
@@ -392,8 +399,9 @@
 </head>
 
 <body>
-    <img class="img-overlay" src="
-    img/Background.jpg">
+    <div class="img-overlay">
+        <img class="img-overlay" src="img/Background.jpg">
+    </div>
     <div class="content-over" style="display: flex;flex-direction: column;gap:10px;">
         <h2>🍺 Degustare Bere</h2>
         <div id="status-container"></div>
