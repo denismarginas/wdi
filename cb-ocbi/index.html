@@ -22,7 +22,7 @@
         }
 
         .img-overlay {
-            position: fixed;
+            position: absolute;
             z-index: 0;
             object-fit: cover;
             width: 100%;
@@ -122,8 +122,8 @@
             color: #fff !important;
         }
 
-        .option-item:hover {
-            background-color: #e2e2e2;
+        #runde-container .option-item:hover {
+            background-color: #1f6441;
         }
 
         .option-item input {
@@ -398,7 +398,7 @@
         <div id="mesaj-raspuns"></div>
         <form id="beerForm">
             <div class="card">
-                <label>Cine ești?</label>
+                <label style="text-align: center; width: 100%;display: block;">Cine ești?</label>
                 <input type="hidden" id="nume" name="entry.1416233126" required>
 
                 <div id="participanti-container">
