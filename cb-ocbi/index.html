@@ -1,0 +1,625 @@
+<!DOCTYPE html>
+<html lang="ro">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Concurs Bere - Participare</title>
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: #1b2f28;
+            color: #333;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        .img-overlay {
+            position: fixed;
+            z-index: 0;
+            object-fit: cover;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            bottom: 0;
+            left: 0;
+            right: 0;
+        }
+
+        .content-over {
+            z-index: 1;
+            position: relative;
+        }
+
+        h2 {
+            color: #ececec;
+            text-align: center;
+            border-bottom: 2px solid #4CAF50;
+            padding-bottom: 10px;
+            background-color: #455e46;
+            padding: 6px 12px;
+            border-radius: 14px;
+            font-size: 18px;
+            line-height: 22px;
+        }
+
+        .card {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+
+        .runda {
+            margin-bottom: 20px;
+            padding: 15px;
+            background: rgba(51, 99, 71, 0.3);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+        }
+
+        #rezultate-container {
+            background: rgba(51, 99, 71, 0.945);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            margin-bottom: 20px;
+            border-radius: 15px;
+            color: #fff;
+            padding: 12px 14px;
+        }
+
+        #rezultate-container h2,
+        #rezultate-container h3,
+        #rezultate-container span {
+            color: #fff;
+        }
+
+        .runda label {
+            font-weight: bold;
+            display: block;
+            margin-bottom: 10px;
+            font-size: 16px;
+            line-height: 22px;
+            font-weight: 600;
+            color: #ffffff;
+        }
+
+        .runda .radio-wrapper {
+            font-size: 14px;
+            line-height: 20px;
+            font-weight: 400;
+        }
+
+        .options {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+            gap: 10px;
+        }
+
+        .option-item {
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            font-size: 14px;
+            cursor: pointer;
+            text-align: center;
+        }
+
+        .option-item:has(input:checked) {
+            background-color: #236432;
+            border-color: #28a745;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .option-item:hover {
+            background-color: #e2e2e2;
+        }
+
+        .option-item input {
+            margin-right: 8px;
+            display: none;
+        }
+
+        .error {
+            color: #721c24;
+            background-color: #f8d7da;
+            border: 1px solid #f5c6cb;
+            padding: 15px;
+            border-radius: 5px;
+            text-align: center;
+        }
+
+        #nume {
+            width: 100%;
+            padding: 10px;
+            box-sizing: border-box;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+
+        button {
+            width: 100%;
+            background: #4CAF50;
+            color: white;
+            padding: 15px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 18px;
+            font-weight: bold;
+            margin-top: 20px;
+            transition: background 0.3s;
+        }
+
+        button:hover {
+            background: #45a049;
+        }
+
+        hr {
+            border: 0;
+            border-top: 1px solid #eee;
+            margin: 20px 0;
+        }
+
+        .formular-raspuns {
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+            margin-top: 20px;
+            font-weight: bold;
+        }
+
+        .succes {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .eroare-mesaj {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .option-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            transition: 0.3s;
+        }
+
+        .option-item:hover {
+            background-color: #f0f0f0;
+        }
+
+        .beer-img {
+            width: 80px;
+            height: 80px;
+            padding: 6px;
+            object-fit: contain;
+            margin-bottom: 8px;
+            border-radius: 12px;
+            background-color: #fff;
+        }
+
+        .accordion-container {
+            margin-top: 20px;
+            text-align: left;
+        }
+
+        .participant-item {
+            background: rgba(255, 255, 255, 0.1);
+            margin-bottom: 10px;
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            overflow: hidden;
+            transition: 0.3s;
+        }
+
+        .participant-item summary {
+            padding: 15px;
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            list-style: none;
+            /* Ascunde triunghiul default */
+            font-weight: bold;
+        }
+
+        /* Chrome/Safari ascundere triunghi */
+        .participant-item summary::-webkit-details-marker {
+            display: none;
+        }
+
+        .participant-item .rank {
+            width: 40px;
+            color: #e67e22;
+        }
+
+        .participant-item .name {
+            flex-grow: 1;
+        }
+
+        .participant-item .score {
+            margin-right: 15px;
+            background: rgba(0, 0, 0, 0.2);
+            padding: 4px 8px;
+            border-radius: 4px;
+        }
+
+        .participant-item .arrow {
+            font-size: 0.8em;
+            transition: 0.3s;
+        }
+
+        .participant-item[open] .arrow {
+            transform: rotate(180deg);
+        }
+
+        .details-content {
+            padding: 10px 15px 15px 55px;
+            background: rgba(0, 0, 0, 0.05);
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 8px;
+            font-size: 0.85em;
+        }
+
+        .runda-detaliu {
+            padding: 4px 0;
+            border-bottom: 1px border rgba(255, 255, 255, 0.05);
+        }
+
+        .runda-detaliu strong {
+            color: #ddd;
+            font-weight: normal;
+        }
+
+        .runde {
+            margin-top: 30px;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.15);
+            /* Efect Glass */
+            backdrop-filter: blur(5px);
+            border-radius: 15px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .runde h4 {
+            margin: 0 0 15px 0;
+            color: #4CAF50;
+            /* Verde pentru "Corect" */
+            text-align: center;
+            font-size: 1.2em;
+            text-transform: uppercase;
+        }
+
+        .corecte-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            gap: 12px;
+        }
+
+        .item-corect {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 10px;
+            border-radius: 8px;
+            text-align: center;
+            border-bottom: 2px solid #4CAF50;
+        }
+
+        .item-corect strong {
+            display: block;
+            font-size: 0.7em;
+            color: #aaa;
+            margin-bottom: 4px;
+        }
+
+        .item-corect span {
+            font-size: 0.9em;
+            font-weight: bold;
+            color: #fff;
+        }
+    </style>
+</head>
+
+<body>
+    <img class="img-overlay" src="
+    img/Background.jpg">
+    <div class="content-over" style="display: flex;flex-direction: column;gap:10px;">
+        <h2>🍺 Degustare Bere</h2>
+        <div id="status-container"></div>
+        <div id="mesaj-raspuns"></div>
+        <form id="beerForm">
+            <div class="card">
+                <label for="nume">Nume Participant:</label>
+                <input type="text" id="nume" name="entry.1416233126" placeholder="Introdu numele tău..." required>
+
+                <p style="display: none;"><strong>Concurs:</strong> Oare ce bere ii?</p>
+                <input type="hidden" name="entry.1962963261" value="Oare ce bere ii?">
+            </div>
+
+            <div id="runde-container">
+            </div>
+
+            <button type="submit">Trimite Răspunsurile</button>
+        </form>
+        <div id="rezultate-container" style="display:none;">
+            <h2 id="castigator-text" style="margin: 6px 20px;"></h2>
+            <div id="lista-participanti"></div>
+            <h3 id="loser-text"
+                style="margin-top:20px; font-size: 0.9em; color: #ffffff;padding: 15px;text-align: center;"></h3>
+            <div class="runde"></div>
+            <button onclick="window.location.href=window.location.pathname">Inapoi la Formular</button>
+        </div>
+    </div>
+
+
+    <script>
+        const sheetCSV = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRL-Lwu8l5vAo8tDsrQemIbde5RbpqcLQic7WpnKgNbTm-ngb8WvcUOa0bLC_MqMUJifQBTdNzLy-Hs/pub?gid=1926189015&single=true&output=csv";
+
+        const entryIds = [
+            "entry.798005432", "entry.1274602696", "entry.889790409",
+            "entry.244957917", "entry.184797526", "entry.776717580",
+            "entry.121399365", "entry.710452339", "entry.1355271358"
+        ];
+
+        async function initForm() {
+            try {
+                const cacheBuster = "&cache=" + new Date().getTime();
+                const response = await fetch(sheetCSV + cacheBuster);
+                if (!response.ok) throw new Error("Raspunsul serverului nu este OK");
+
+                const data = await response.text();
+                const rows = data.split(/\r?\n/);
+                const optiuni = [];
+
+                for (let i = 1; i < rows.length; i++) {
+                    const columns = rows[i].split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
+                    if (columns[1]) {
+                        const numeBere = columns[1].replace(/^"(.*)"$/, '$1').trim();
+                        optiuni.push(numeBere);
+                    }
+                }
+
+                const container = document.getElementById('runde-container');
+                container.innerHTML = "";
+
+                for (let i = 1; i <= 9; i++) {
+                    let html = `
+            <div class="runda">
+                <label>Runda ${i}</label>
+                <div class="options">`;
+
+                    optiuni.forEach(nume => {
+                        // Construim calea către imagine folosind numele berii
+                        // onerror="this.style.display='none'" va ascunde imaginea dacă fișierul nu există
+                        const imgSrc = `img/${nume}.jpg`;
+                        const imgTag = `<img src="${imgSrc}" class="beer-img" alt="${nume}" onerror="this.style.visibility='hidden'; this.style.height='0';">`;
+
+                        html += `
+                <label class="option-item">
+                    ${imgTag}
+                    <div class="radio-wrapper">
+                        <input type="radio" name="${entryIds[i - 1]}" value="${nume}" required>
+                        <span>${nume}</span>
+                    </div>
+                </label>`;
+                    });
+
+                    html += `</div></div>`;
+                    container.innerHTML += html;
+                }
+            } catch (err) {
+                console.error("Eroare detaliată:", err);
+                document.getElementById('status-container').innerHTML =
+                    `<div class='error'>⚠️ Problema la conexiune.</div>`;
+            }
+        }
+
+        document.getElementById('beerForm').onsubmit = async function (e) {
+            e.preventDefault();
+
+            const submitButton = this.querySelector('button');
+            const mesajContainer = document.getElementById('mesaj-raspuns');
+            const baseAction = "https://docs.google.com/forms/d/e/1FAIpQLSfNpdMrozAKyA69WYd2Q_Fc4ftBzLsmru5jrb8bTaunEBO5LQ/formResponse";
+            submitButton.disabled = true;
+            submitButton.innerText = "Se trimite...";
+
+            const formData = new FormData(this);
+            const queryString = new URLSearchParams(formData).toString();
+            const finalUrl = baseAction + "?" + queryString;
+
+            try {
+                await fetch(finalUrl, {
+                    method: 'POST',
+                    mode: 'no-cors'
+                });
+                mesajContainer.innerHTML = `
+            <div class="formular-raspuns succes">
+                <p>Ai fost înscris cu succes! 🍻</p>
+            </div>`;
+
+                mesajContainer.innerHTML += `
+        <button onclick="window.location.href='?afiseaza_rezultate=da'" style="background:#c99f2e; margin-top:10px;">
+            Vezi rezultate
+        </button>`;
+
+                document.getElementById('beerForm').style.display = 'none';
+
+            } catch (err) {
+                console.error("Eroare la trimitere:", err);
+                mesajContainer.innerHTML = `
+            <div class="formular-raspuns eroare-mesaj">
+                <p>A apărut o eroare. Te rugăm să încerci din nou.</p>
+            </div>`;
+                submitButton.disabled = false;
+                submitButton.innerText = "Trimite Răspunsurile";
+            }
+        };
+
+        const sheetRezultate = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRL-Lwu8l5vAo8tDsrQemIbde5RbpqcLQic7WpnKgNbTm-ngb8WvcUOa0bLC_MqMUJifQBTdNzLy-Hs/pub?gid=0&single=true&output=csv";
+        async function afiseazaRezultate() {
+            const container = document.getElementById('rezultate-container');
+            const form = document.getElementById('beerForm');
+            const h2Initial = document.querySelector('h2');
+
+            form.style.display = 'none';
+            if (h2Initial) h2Initial.style.display = 'none';
+            container.style.display = 'block';
+
+            try {
+                const response = await fetch(sheetRezultate + "&cache=" + new Date().getTime());
+                const data = await response.text();
+
+                const rows = data.split(/\r?\n/).filter(row => row.trim() !== "");
+                const header = rows[0].split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/); // Citim capul de tabel pentru nume runde
+                const dataRows = rows.slice(1);
+
+                let participanti = [];
+
+                dataRows.forEach((row) => {
+                    const cols = row.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
+
+                    if (cols.length >= 2) {
+                        // Extragem rundele (presupunând că încep de la indexul 3 până la 11)
+                        let alegeriRunde = [];
+                        for (let i = 3; i <= 11; i++) {
+                            if (cols[i]) {
+                                alegeriRunde.push({
+                                    numar: i - 2, // Runda 1, 2...
+                                    numeRunda: header[i] ? header[i].replace(/"/g, "") : `Runda ${i - 2}`,
+                                    bere: cols[i].replace(/"/g, "").trim()
+                                });
+                            }
+                        }
+
+                        participanti.push({
+                            nume: (cols[1] || "Anonim").replace(/"/g, "").trim(),
+                            scor: parseInt((cols[2] || "0").replace(/"/g, "")) || 0,
+                            runde: alegeriRunde
+                        });
+                    }
+                });
+
+                if (participanti.length === 0) {
+                    document.getElementById('lista-participanti').innerHTML = "<p>Niciun participant înscris.</p>";
+                    return;
+                }
+
+                // Sortare după scor
+                participanti.sort((a, b) => b.scor - a.scor);
+
+                // Mesaje câștigători/loseri (rămân la fel)
+                const maxScor = participanti[0].scor;
+                const minScor = participanti[participanti.length - 1].scor;
+                const castigatori = participanti.filter(p => p.scor === maxScor).map(p => p.nume);
+                const loseri = participanti.filter(p => p.scor === minScor).map(p => p.nume);
+
+                document.getElementById('castigator-text').innerText = "🏆 " + (castigatori.length > 1 ? castigatori.join(", ") + " au câștigat! Dar trebuie să se dueleze până câștigă doar unul!" : castigatori[0] + " a câștigat!");
+                document.getElementById('loser-text').innerText = "🤌 " + (loseri.length > 1 ? loseri.join(", ") + " treceți pe vin. Pierzatorii își fac un tatuaj pușcat." : loseri[0] + ", treci pe vin. Pierzatorii își fac un tatuaj pușcat.");
+
+                // --- Generare ACCORDION ---
+                let htmlAccordion = "<div class='accordion-container'>";
+
+                participanti.forEach((p, index) => {
+                    let detaliuRunde = p.runde.map(r => `
+                <div class="runda-detaliu">
+                    <strong>${r.numeRunda}:</strong> <span>${r.bere}</span>
+                </div>
+            `).join("");
+
+                    htmlAccordion += `
+                <details class="participant-item">
+                    <summary>
+                        <span class="rank">#${index + 1}</span>
+                        <span class="name">${p.nume}</span>
+                        <span class="score">${p.scor} pct</span>
+                        <span class="arrow">▼</span>
+                    </summary>
+                    <div class="details-content">
+                        ${detaliuRunde}
+                    </div>
+                </details>
+            `;
+                });
+
+                htmlAccordion += "</div>";
+                document.getElementById('lista-participanti').innerHTML = htmlAccordion;
+
+            } catch (err) {
+                console.error("Eroare:", err);
+                document.getElementById('lista-participanti').innerHTML = "<p class='error'>Eroare la încărcare.</p>";
+            }
+        }
+        const sheetRunde = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRL-Lwu8l5vAo8tDsrQemIbde5RbpqcLQic7WpnKgNbTm-ngb8WvcUOa0bLC_MqMUJifQBTdNzLy-Hs/pub?gid=1548007609&single=true&output=csv";
+
+        async function incarcaRundeCorecte() {
+            const containerRunde = document.querySelector('#rezultate-container .runde');
+            if (!containerRunde) return;
+
+            try {
+                const response = await fetch(sheetRunde + "&cache=" + new Date().getTime());
+                const data = await response.text();
+
+                // Split pe rânduri și filtrare rânduri goale
+                const rows = data.split(/\r?\n/).filter(row => row.trim() !== "");
+
+                let htmlVariante = `<h4>✅ Soluții Corecte</h4><div class="corecte-grid">`;
+
+                // Pornim de la i = 1 pentru a sări peste header (Runda, Articole, Scor)
+                for (let i = 1; i < rows.length; i++) {
+                    const cols = rows[i].split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
+
+                    if (cols.length >= 2) {
+                        const rundaNr = cols[0].replace(/"/g, "").trim(); // Coloana A (Runda)
+                        const bereNume = cols[1].replace(/"/g, "").trim(); // Coloana B (Articole)
+
+                        htmlVariante += `
+                    <div class="item-corect">
+                        <strong>Runda ${rundaNr}:</strong>
+                        <span>${bereNume}</span>
+                    </div>`;
+                    }
+                }
+
+                htmlVariante += `</div>`;
+                containerRunde.innerHTML = htmlVariante;
+
+            } catch (err) {
+                console.error("Eroare la încărcarea soluțiilor:", err);
+                containerRunde.innerHTML = "<p>Nu am putut încărca soluțiile corecte.</p>";
+            }
+        }
+
+        // Verificam la incarcarea paginii daca avem parametrul in URL
+        window.onload = () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.get('afiseaza_rezultate') === 'da') {
+                afiseazaRezultate();
+                incarcaRundeCorecte();
+            } else {
+                initForm();
+            }
+        };
+        initForm();
+    </script>
+
+</body>
+
+</html>
