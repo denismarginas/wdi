@@ -119,6 +119,7 @@
             background-color: #236432;
             border-color: #28a745;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            color: #fff !important;
         }
 
         .option-item:hover {
@@ -335,6 +336,56 @@
             font-weight: bold;
             color: #fff;
         }
+
+        .option-item.readonly {
+            opacity: 0.6;
+            cursor: not-allowed;
+            filter: grayscale(0.5);
+        }
+
+        .options.locked {
+            pointer-events: none;
+            /* Previne orice interactiune */
+        }
+
+        .runda[style*="rgba(255,0,0,0.3)"] {
+            background: rgba(0, 0, 0, 0.2) !important;
+        }
+
+        .participant-img {
+            width: 70px;
+            height: 70px;
+            object-fit: cover;
+            border-radius: 45px;
+            /* Transformă imaginea în cerc */
+            border: 3px solid transparent;
+            transition: all 0.2s ease;
+            cursor: pointer;
+        }
+
+        /* Stil când participantul este selectat */
+        .option-item input[type="radio"]:checked+.participant-img {
+            border-color: #c99f2e;
+            transform: scale(1.1);
+            box-shadow: 0 0 10px rgba(201, 159, 46, 0.5);
+        }
+
+        #participanti-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            justify-content: center;
+            padding: 10px;
+        }
+
+        .participant-label {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            font-size: 0.8em;
+            width: 80px;
+            gap:5px;
+        }
     </style>
 </head>
 
@@ -347,10 +398,13 @@
         <div id="mesaj-raspuns"></div>
         <form id="beerForm">
             <div class="card">
-                <label for="nume">Nume Participant:</label>
-                <input type="text" id="nume" name="entry.1416233126" placeholder="Introdu numele tău..." required>
+                <label>Cine ești?</label>
+                <input type="hidden" id="nume" name="entry.1416233126" required>
 
-                <p style="display: none;"><strong>Concurs:</strong> Oare ce bere ii?</p>
+                <div id="participanti-container">
+                    <p>Se încarcă lista...</p>
+                </div>
+
                 <input type="hidden" name="entry.1962963261" value="Oare ce bere ii?">
             </div>
 
@@ -368,258 +422,280 @@
             <button onclick="window.location.href=window.location.pathname">Inapoi la Formular</button>
         </div>
     </div>
-
-
     <script>
-        const sheetCSV = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRL-Lwu8l5vAo8tDsrQemIbde5RbpqcLQic7WpnKgNbTm-ngb8WvcUOa0bLC_MqMUJifQBTdNzLy-Hs/pub?gid=1926189015&single=true&output=csv";
+        const URL_PARTICIPANTI = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRL-Lwu8l5vAo8tDsrQemIbde5RbpqcLQic7WpnKgNbTm-ngb8WvcUOa0bLC_MqMUJifQBTdNzLy-Hs/pub?gid=341374224&single=true&output=csv";
+        const URL_CATALOG_BERI = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRL-Lwu8l5vAo8tDsrQemIbde5RbpqcLQic7WpnKgNbTm-ngb8WvcUOa0bLC_MqMUJifQBTdNzLy-Hs/pub?gid=1926189015&single=true&output=csv";
+        const URL_CONFIG_RUNDE = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRL-Lwu8l5vAo8tDsrQemIbde5RbpqcLQic7WpnKgNbTm-ngb8WvcUOa0bLC_MqMUJifQBTdNzLy-Hs/pub?gid=1548007609&single=true&output=csv";
+        const URL_REZULTATE = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRL-Lwu8l5vAo8tDsrQemIbde5RbpqcLQic7WpnKgNbTm-ngb8WvcUOa0bLC_MqMUJifQBTdNzLy-Hs/pub?gid=0&single=true&output=csv";
 
-        const entryIds = [
+        const GOOGLE_FORM_ENTRY_IDS = [
             "entry.798005432", "entry.1274602696", "entry.889790409",
             "entry.244957917", "entry.184797526", "entry.776717580",
             "entry.121399365", "entry.710452339", "entry.1355271358"
         ];
 
-        async function initForm() {
+        let ultimaConfiguratieValida = {};
+        let rundaMaximaActiva = 0;
+        let contorRegresie = 0;
+        const LIMITA_REGRESIE = 10;
+
+        async function preiaDateServer(url) {
+            const timestamp = Date.now();
+            const response = await fetch(`${url}${url.includes('?') ? '&' : '?'}nocache=${timestamp}`);
+            return await response.text();
+        }
+
+        function randeazaStructuraInitiala() {
+            const container = document.getElementById('runde-container');
+            if (!container || container.children.length > 0) return;
+            let htmlSustragere = "";
+            for (let i = 1; i <= 9; i++) {
+                htmlSustragere += `
+            <div id="wrapper-runda-${i}" class="runda" style="display: none; transition: all 0.3s ease;">
+                <label id="label-runda-${i}" style="font-weight:bold;"></label>
+                <div id="optiuni-runda-${i}" class="options"></div>
+            </div>`;
+            }
+            container.innerHTML = htmlSustragere;
+        }
+
+        async function sincronizareAplicatie() {
             try {
-                const cacheBuster = "&cache=" + new Date().getTime();
-                const response = await fetch(sheetCSV + cacheBuster);
-                if (!response.ok) throw new Error("Raspunsul serverului nu este OK");
+                randeazaStructuraInitiala();
+                const urlParams = new URLSearchParams(window.location.search);
+                const esteModBattleRoyal = urlParams.get('battleroyal') === 'da';
 
-                const data = await response.text();
-                const rows = data.split(/\r?\n/);
-                const optiuni = [];
+                const [csvBeri, csvRunde] = await Promise.all([
+                    preiaDateServer(URL_CATALOG_BERI),
+                    preiaDateServer(URL_CONFIG_RUNDE)
+                ]);
 
-                for (let i = 1; i < rows.length; i++) {
-                    const columns = rows[i].split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
-                    if (columns[1]) {
-                        const numeBere = columns[1].replace(/^"(.*)"$/, '$1').trim();
-                        optiuni.push(numeBere);
+                const catalogBeri = csvBeri.split(/\r?\n/).slice(1)
+                    .map(row => {
+                        const cols = row.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
+                        return cols[1] ? cols[1].replace(/"/g, "").trim() : null;
+                    }).filter(b => b);
+
+                const randuriRunde = csvRunde.split(/\r?\n/).filter(r => r.trim() !== "");
+                let nouaConfiguratie = {};
+                let rundaMaxDetectata = 0;
+
+                randuriRunde.slice(1).forEach(row => {
+                    const cols = row.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
+                    if (cols.length >= 7) {
+                        const idRunda = cols[0].trim();
+                        const status = cols[5] ? cols[5].replace(/"/g, "").trim().toLowerCase() : "";
+                        nouaConfiguratie[idRunda] = {
+                            solutieCorecta: cols[1] ? cols[1].replace(/"/g, "").trim() : "",
+                            posibile: cols[3] ? cols[3].replace(/"/g, "").trim() : "Toate",
+                            status: status,
+                            sePoateEdita: cols[6] ? cols[6].replace(/"/g, "").trim().toLowerCase() === "da" : true
+                        };
+                        if (status !== "in pregatire" && status !== "") {
+                            rundaMaxDetectata = Math.max(rundaMaxDetectata, parseInt(idRunda));
+                        }
                     }
-                }
+                });
 
-                const container = document.getElementById('runde-container');
-                container.innerHTML = "";
+                const alertaConflict = document.getElementById('alerta-conflict-cache') || creareElementAlerta();
+                if (rundaMaxDetectata < rundaMaximaActiva && contorRegresie < LIMITA_REGRESIE) {
+                    contorRegresie++;
+                    alertaConflict.innerHTML = `⚠️ Eroare sincronizare (${contorRegresie}/${LIMITA_REGRESIE}): Date învechite detectate. Se păstrează Runda ${rundaMaximaActiva}.`;
+                    alertaConflict.style.display = "block";
+                    return;
+                } else {
+                    alertaConflict.style.display = "none";
+                    contorRegresie = 0;
+                    rundaMaximaActiva = rundaMaxDetectata;
+                    ultimaConfiguratieValida = nouaConfiguratie;
+                }
 
                 for (let i = 1; i <= 9; i++) {
-                    let html = `
-            <div class="runda">
-                <label>Runda ${i}</label>
-                <div class="options">`;
+                    const wrapper = document.getElementById(`wrapper-runda-${i}`);
+                    const optionsContainer = document.getElementById(`optiuni-runda-${i}`);
+                    const label = document.getElementById(`label-runda-${i}`);
+                    const config = ultimaConfiguratieValida[i.toString()];
 
-                    optiuni.forEach(nume => {
-                        // Construim calea către imagine folosind numele berii
-                        // onerror="this.style.display='none'" va ascunde imaginea dacă fișierul nu există
-                        const imgSrc = `img/${nume}.jpg`;
-                        const imgTag = `<img src="${imgSrc}" class="beer-img" alt="${nume}" onerror="this.style.visibility='hidden'; this.style.height='0';">`;
+                    if (!config || config.status === "in pregatire" || config.status === "") {
+                        wrapper.style.display = "none";
+                        continue;
+                    }
 
-                        html += `
-                <label class="option-item">
-                    ${imgTag}
-                    <div class="radio-wrapper">
-                        <input type="radio" name="${entryIds[i - 1]}" value="${nume}" required>
-                        <span>${nume}</span>
-                    </div>
-                </label>`;
+                    wrapper.style.display = "block";
+                    const esteIncheiata = (config.status === "finalizata" || config.status === "incheiata");
+                    const blocatLaEditare = esteIncheiata && !config.sePoateEdita;
+
+                    // Update label și border fără a distruge input-urile
+                    const labelNou = `Runda ${i} ${esteIncheiata ? '<span style="color:#ff4444;">(Încheiată)</span>' : '<span style="color:#4CAF50;">(Activă)</span>'}`;
+                    if (label.innerHTML !== labelNou) label.innerHTML = labelNou;
+                    wrapper.style.borderColor = esteIncheiata ? 'rgba(255,0,0,0.3)' : 'rgba(0,255,0,0.3)';
+
+                    let beriDeAfisat = (esteModBattleRoyal && config.posibile !== "Toate")
+                        ? catalogBeri.filter(b => config.posibile.toLowerCase().split(',').map(x => x.trim()).includes(b.toLowerCase()))
+                        : [...catalogBeri];
+
+                    // --- LOGICA DE UPDATE SMART ---
+                    // Generăm amprenta listei de beri (numele lor concatenate)
+                    const amprentaNoua = beriDeAfisat.join('|');
+                    const amprentaVeche = optionsContainer.getAttribute('data-amprenta');
+
+                    if (amprentaNoua !== amprentaVeche) {
+                        // Doar dacă lista de beri s-a schimbat efectiv (Battle Royal update), refacem HTML-ul
+                        let htmlOptiuni = "";
+                        beriDeAfisat.forEach(nume => {
+                            htmlOptiuni += `
+                            <label class="option-item">
+                                <img src="img/${nume}.jpg" class="beer-img" alt="${nume}" onerror="this.style.visibility='hidden';">
+                                <div class="radio-wrapper">
+                                    <input type="radio" name="${GOOGLE_FORM_ENTRY_IDS[i - 1]}" value="${nume}" required>
+                                    <span>${nume}</span>
+                                </div>
+                            </label>`;
+                        });
+                        optionsContainer.innerHTML = htmlOptiuni;
+                        optionsContainer.setAttribute('data-amprenta', amprentaNoua);
+                    }
+
+                    // Update stare blocat/deblocat (fără a șterge elementele)
+                    const inputs = optionsContainer.querySelectorAll('input');
+                    inputs.forEach(inp => {
+                        inp.disabled = blocatLaEditare;
+                        const parentLabel = inp.closest('.option-item');
+                        if (blocatLaEditare) parentLabel.classList.add('readonly');
+                        else parentLabel.classList.remove('readonly');
                     });
 
-                    html += `</div></div>`;
-                    container.innerHTML += html;
+                    blocatLaEditare ? optionsContainer.classList.add('locked') : optionsContainer.classList.remove('locked');
                 }
-            } catch (err) {
-                console.error("Eroare detaliată:", err);
-                document.getElementById('status-container').innerHTML =
-                    `<div class='error'>⚠️ Problema la conexiune.</div>`;
-            }
+            } catch (e) { console.error("Sync Error:", e); }
+        }
+        async function afisareClasament() {
+            try {
+                const dataRezultate = await preiaDateServer(URL_REZULTATE);
+                const rows = dataRezultate.split(/\r?\n/).filter(r => r.trim() !== "");
+                const header = rows[0].split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
+
+                let participanti = rows.slice(1).map(row => {
+                    const cols = row.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
+                    let runde = [];
+                    for (let i = 3; i <= 11; i++) {
+                        if (cols[i]) runde.push({ t: header[i].replace(/"/g, ""), b: cols[i].replace(/"/g, "") });
+                    }
+                    return {
+                        nume: (cols[1] || "Anonim").replace(/"/g, "").trim(),
+                        scor: parseInt(cols[2]) || 0,
+                        runde: runde
+                    };
+                }).filter(p => p.nume !== "");
+
+                participanti.sort((a, b) => b.scor - a.scor);
+
+                if (participanti.length > 0) {
+                    const maxS = participanti[0].scor;
+                    const minS = participanti[participanti.length - 1].scor;
+
+                    const castigatoriList = participanti.filter(p => p.scor === maxS);
+                    const pierzatoriList = participanti.filter(p => p.scor === minS);
+
+                    // Logica plural castigatori
+                    const txtCastig = castigatoriList.map(p => p.nume).join(", ");
+                    document.getElementById('castigator-text').innerText = "🏆 " + txtCastig + (castigatoriList.length > 1 ? " au câștigat! Trebuie un duel să vedem care câștigă!" : " a câștigat!");
+
+                    // Logica plural pierzatori
+                    const txtPierd = pierzatoriList.map(p => p.nume).join(", ");
+                    document.getElementById('loser-text').innerText = "🤌 " + txtPierd + (pierzatoriList.length > 1 ? " treceți pe vin. Trebuie un duel să vedem care e cel mai slab bețiv! Pierzătorul suprem trebuie tatuat cu tatuaje pușcate." : ", treci pe vin. Pierzătorul suprem trebuie tatuat cu tatuaje pușcate.");
+
+                    let htmlAcc = "<div class='accordion-container'>";
+                    participanti.forEach((p, idx) => {
+                        let det = p.runde.map(r => `<div class="runda-detaliu"><strong>${r.t}:</strong> <span>${r.b}</span></div>`).join("");
+                        htmlAcc += `<details class="participant-item"><summary><span class="rank">#${idx + 1}</span> ${p.nume} - ${p.scor} pct</summary><div class="details-content">${det}</div></details>`;
+                    });
+                    document.getElementById('lista-participanti').innerHTML = htmlAcc + "</div>";
+                }
+
+                // Sectiunea Solutii Corecte
+                const containerSolutii = document.querySelector('#rezultate-container .runde');
+                if (containerSolutii) {
+                    let htmlSol = `<h4>✅ Soluții Corecte</h4><div class="corecte-grid">`;
+                    let rundaGasita = false;
+                    Object.keys(ultimaConfiguratieValida).forEach(id => {
+                        const c = ultimaConfiguratieValida[id];
+                        if (c.status === "finalizata" || c.status === "incheiata") {
+                            htmlSol += `<div class="item-corect"><strong>Runda ${id}:</strong> <span>${c.solutieCorecta}</span></div>`;
+                            rundaGasita = true;
+                        }
+                    });
+                    containerSolutii.innerHTML = rundaGasita ? htmlSol + `</div>` : "";
+                }
+
+                document.getElementById('beerForm').style.display = 'none';
+                document.getElementById('rezultate-container').style.display = 'block';
+            } catch (e) { console.error(e); }
+        }
+
+        function creareElementAlerta() {
+            const alerta = document.createElement('div');
+            alerta.id = 'alerta-conflict-cache';
+            alerta.style = "background: #fff3cd; color: #856404; padding: 10px; border-radius: 5px; margin: 10px 0; border: 1px solid #ffeeba; display: none; font-size: 0.9em; text-align: center;";
+            const f = document.getElementById('beerForm');
+            f.insertBefore(alerta, f.querySelector('button[type="submit"]'));
+            return alerta;
         }
 
         document.getElementById('beerForm').onsubmit = async function (e) {
             e.preventDefault();
-
-            const submitButton = this.querySelector('button');
-            const mesajContainer = document.getElementById('mesaj-raspuns');
-            const baseAction = "https://docs.google.com/forms/d/e/1FAIpQLSfNpdMrozAKyA69WYd2Q_Fc4ftBzLsmru5jrb8bTaunEBO5LQ/formResponse";
-            submitButton.disabled = true;
-            submitButton.innerText = "Se trimite...";
-
-            const formData = new FormData(this);
-            const queryString = new URLSearchParams(formData).toString();
-            const finalUrl = baseAction + "?" + queryString;
-
+            const b = this.querySelector('button');
+            b.disabled = true; b.innerText = "Se trimite...";
+            const d = new URLSearchParams(new FormData(this)).toString();
             try {
-                await fetch(finalUrl, {
-                    method: 'POST',
-                    mode: 'no-cors'
-                });
-                mesajContainer.innerHTML = `
-            <div class="formular-raspuns succes">
-                <p>Ai fost înscris cu succes! 🍻</p>
-            </div>`;
-
-                mesajContainer.innerHTML += `
-        <button onclick="window.location.href='?afiseaza_rezultate=da'" style="background:#c99f2e; margin-top:10px;">
-            Vezi rezultate
-        </button>`;
-
-                document.getElementById('beerForm').style.display = 'none';
-
-            } catch (err) {
-                console.error("Eroare la trimitere:", err);
-                mesajContainer.innerHTML = `
-            <div class="formular-raspuns eroare-mesaj">
-                <p>A apărut o eroare. Te rugăm să încerci din nou.</p>
-            </div>`;
-                submitButton.disabled = false;
-                submitButton.innerText = "Trimite Răspunsurile";
-            }
+                await fetch(`https://docs.google.com/forms/d/e/1FAIpQLSfNpdMrozAKyA69WYd2Q_Fc4ftBzLsmru5jrb8bTaunEBO5LQ/formResponse?${d}`, { method: 'POST', mode: 'no-cors' });
+                document.getElementById('mesaj-raspuns').innerHTML = `<div class="formular-raspuns succes"><p>Ai fost înscris cu succes! 🍻</p></div><button onclick="window.location.href='?afiseaza_rezultate=da'" style="background:#c99f2e; margin-top:10px;">Vezi rezultate</button>`;
+                this.style.display = 'none';
+            } catch (err) { b.disabled = false; b.innerText = "Eroare. Reîncearcă"; }
         };
-
-        const sheetRezultate = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRL-Lwu8l5vAo8tDsrQemIbde5RbpqcLQic7WpnKgNbTm-ngb8WvcUOa0bLC_MqMUJifQBTdNzLy-Hs/pub?gid=0&single=true&output=csv";
-        async function afiseazaRezultate() {
-            const container = document.getElementById('rezultate-container');
-            const form = document.getElementById('beerForm');
-            const h2Initial = document.querySelector('h2');
-
-            form.style.display = 'none';
-            if (h2Initial) h2Initial.style.display = 'none';
-            container.style.display = 'block';
-
+        async function incarcaParticipanti() {
             try {
-                const response = await fetch(sheetRezultate + "&cache=" + new Date().getTime());
-                const data = await response.text();
+                const csvData = await preiaDateServer(URL_PARTICIPANTI);
+                const linii = csvData.split(/\r?\n/).slice(1); // Ignorăm header-ul
+                const container = document.getElementById('participanti-container');
+                const inputAscuns = document.getElementById('nume');
 
-                const rows = data.split(/\r?\n/).filter(row => row.trim() !== "");
-                const header = rows[0].split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/); // Citim capul de tabel pentru nume runde
-                const dataRows = rows.slice(1);
+                let html = "";
+                linii.forEach(linie => {
+                    const nume = linie.trim().replace(/"/g, "");
+                    if (!nume) return;
 
-                let participanti = [];
-
-                dataRows.forEach((row) => {
-                    const cols = row.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
-
-                    if (cols.length >= 2) {
-                        // Extragem rundele (presupunând că încep de la indexul 3 până la 11)
-                        let alegeriRunde = [];
-                        for (let i = 3; i <= 11; i++) {
-                            if (cols[i]) {
-                                alegeriRunde.push({
-                                    numar: i - 2, // Runda 1, 2...
-                                    numeRunda: header[i] ? header[i].replace(/"/g, "") : `Runda ${i - 2}`,
-                                    bere: cols[i].replace(/"/g, "").trim()
-                                });
-                            }
-                        }
-
-                        participanti.push({
-                            nume: (cols[1] || "Anonim").replace(/"/g, "").trim(),
-                            scor: parseInt((cols[2] || "0").replace(/"/g, "")) || 0,
-                            runde: alegeriRunde
-                        });
-                    }
+                    html += `
+            <label class="option-item participant-label">
+                <input type="radio" name="temp_nume" value="${nume}" 
+                       style="display:none;" 
+                       onchange="document.getElementById('nume').value=this.value" required>
+                <img src="img/${nume}.jpg" class="participant-img" alt="${nume}" 
+                     onerror="this.src='img/Persoana.jpg';">
+                <span>${nume}</span>
+            </label>`;
                 });
 
-                if (participanti.length === 0) {
-                    document.getElementById('lista-participanti').innerHTML = "<p>Niciun participant înscris.</p>";
-                    return;
-                }
-
-                // Sortare după scor
-                participanti.sort((a, b) => b.scor - a.scor);
-
-                // Mesaje câștigători/loseri (rămân la fel)
-                const maxScor = participanti[0].scor;
-                const minScor = participanti[participanti.length - 1].scor;
-                const castigatori = participanti.filter(p => p.scor === maxScor).map(p => p.nume);
-                const loseri = participanti.filter(p => p.scor === minScor).map(p => p.nume);
-
-                document.getElementById('castigator-text').innerText = "🏆 " + (castigatori.length > 1 ? castigatori.join(", ") + " au câștigat! Dar trebuie să se dueleze până câștigă doar unul!" : castigatori[0] + " a câștigat!");
-                document.getElementById('loser-text').innerText = "🤌 " + (loseri.length > 1 ? loseri.join(", ") + " treceți pe vin. Pierzatorii își fac un tatuaj pușcat." : loseri[0] + ", treci pe vin. Pierzatorii își fac un tatuaj pușcat.");
-
-                // --- Generare ACCORDION ---
-                let htmlAccordion = "<div class='accordion-container'>";
-
-                participanti.forEach((p, index) => {
-                    let detaliuRunde = p.runde.map(r => `
-                <div class="runda-detaliu">
-                    <strong>${r.numeRunda}:</strong> <span>${r.bere}</span>
-                </div>
-            `).join("");
-
-                    htmlAccordion += `
-                <details class="participant-item">
-                    <summary>
-                        <span class="rank">#${index + 1}</span>
-                        <span class="name">${p.nume}</span>
-                        <span class="score">${p.scor} pct</span>
-                        <span class="arrow">▼</span>
-                    </summary>
-                    <div class="details-content">
-                        ${detaliuRunde}
-                    </div>
-                </details>
-            `;
-                });
-
-                htmlAccordion += "</div>";
-                document.getElementById('lista-participanti').innerHTML = htmlAccordion;
-
-            } catch (err) {
-                console.error("Eroare:", err);
-                document.getElementById('lista-participanti').innerHTML = "<p class='error'>Eroare la încărcare.</p>";
+                container.innerHTML = html || "<p>Niciun participant găsit.</p>";
+            } catch (e) {
+                console.error("Eroare la încărcarea participanților:", e);
+                document.getElementById('participanti-container').innerHTML = "<p>Eroare la încărcare.</p>";
             }
         }
-        const sheetRunde = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRL-Lwu8l5vAo8tDsrQemIbde5RbpqcLQic7WpnKgNbTm-ngb8WvcUOa0bLC_MqMUJifQBTdNzLy-Hs/pub?gid=1548007609&single=true&output=csv";
-
-        async function incarcaRundeCorecte() {
-            const containerRunde = document.querySelector('#rezultate-container .runde');
-            if (!containerRunde) return;
-
-            try {
-                const response = await fetch(sheetRunde + "&cache=" + new Date().getTime());
-                const data = await response.text();
-
-                // Split pe rânduri și filtrare rânduri goale
-                const rows = data.split(/\r?\n/).filter(row => row.trim() !== "");
-
-                let htmlVariante = `<h4>✅ Soluții Corecte</h4><div class="corecte-grid">`;
-
-                // Pornim de la i = 1 pentru a sări peste header (Runda, Articole, Scor)
-                for (let i = 1; i < rows.length; i++) {
-                    const cols = rows[i].split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
-
-                    if (cols.length >= 2) {
-                        const rundaNr = cols[0].replace(/"/g, "").trim(); // Coloana A (Runda)
-                        const bereNume = cols[1].replace(/"/g, "").trim(); // Coloana B (Articole)
-
-                        htmlVariante += `
-                    <div class="item-corect">
-                        <strong>Runda ${rundaNr}:</strong>
-                        <span>${bereNume}</span>
-                    </div>`;
-                    }
-                }
-
-                htmlVariante += `</div>`;
-                containerRunde.innerHTML = htmlVariante;
-
-            } catch (err) {
-                console.error("Eroare la încărcarea soluțiilor:", err);
-                containerRunde.innerHTML = "<p>Nu am putut încărca soluțiile corecte.</p>";
-            }
-        }
-
-        // Verificam la incarcarea paginii daca avem parametrul in URL
         window.onload = () => {
-            const urlParams = new URLSearchParams(window.location.search);
-            if (urlParams.get('afiseaza_rezultate') === 'da') {
-                afiseazaRezultate();
-                incarcaRundeCorecte();
-            } else {
-                initForm();
-            }
-        };
-        initForm();
-    </script>
+            const p = new URLSearchParams(window.location.search);
+            const res = p.get('afiseaza_rezultate') === 'da';
 
+            if (!res) incarcaParticipanti();
+
+            const bucla = async () => {
+                await sincronizareAplicatie();
+                if (res) afisareClasament();
+            };
+            bucla();
+            setInterval(bucla, 20000);
+        };
+    </script>
 </body>
 
 </html>
