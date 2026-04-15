@@ -384,7 +384,7 @@
             align-items: center;
             font-size: 0.8em;
             width: 80px;
-            gap:5px;
+            gap: 5px;
         }
     </style>
 </head>
@@ -559,10 +559,22 @@
                     // Update stare blocat/deblocat (fără a șterge elementele)
                     const inputs = optionsContainer.querySelectorAll('input');
                     inputs.forEach(inp => {
-                        inp.disabled = blocatLaEditare;
+                        if (wrapper.style.display === "none" || blocatLaEditare) {
+                            inp.required = false;
+                        } else {
+                            inp.required = true;
+                        }
+
                         const parentLabel = inp.closest('.option-item');
-                        if (blocatLaEditare) parentLabel.classList.add('readonly');
-                        else parentLabel.classList.remove('readonly');
+                        if (blocatLaEditare) {
+                            parentLabel.classList.add('readonly');
+                            parentLabel.style.pointerEvents = 'none';
+                            parentLabel.style.opacity = '0.7';
+                        } else {
+                            parentLabel.classList.remove('readonly');
+                            parentLabel.style.pointerEvents = 'auto';
+                            parentLabel.style.opacity = '1';
+                        }
                     });
 
                     blocatLaEditare ? optionsContainer.classList.add('locked') : optionsContainer.classList.remove('locked');
