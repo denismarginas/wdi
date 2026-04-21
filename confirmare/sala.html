@@ -1,0 +1,608 @@
+<!DOCTYPE html>
+<html lang="ro">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Așezarea în Sală - Nunta Denis&Ioana</title>
+    <link rel="icon" type="image/x-icon" href="assets/favicon.ico">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <style>
+        @font-face {
+            font-family: 'PrimaryFont';
+            src: url('font/PrimaryFont.ttf') format('truetype');
+            font-weight: normal;
+            font-style: normal;
+        }
+
+        @font-face {
+            font-family: 'SecondaryFont';
+            src: url('font/SecondaryFont.ttf') format('truetype');
+            font-weight: normal;
+            font-style: normal;
+        }
+
+        :root {
+            --font-primary: 'PrimaryFont', serif;
+            --font-secondary: 'SecondaryFont', serif;
+            --color-primary: #595959;
+            --color-primary-rgb: 89, 89, 89;
+            --color-secondary: #fefcf7;
+            --color-secondary-rgb: 254, 252, 247;
+            --color-tertiary: #fefcf7;
+            --color-tertiary-rgb: 255, 255, 255;
+        }
+
+        body {
+            font-family: var(--font-primary);
+            background: var(--color-secondary);
+            color: var(--color-primary);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 0 !important;
+            padding: 0 !important;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        .body-wrapper {
+            width: 100%;
+            height: 100%;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .form-container {
+            max-width: 500px;
+            width: 100%;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 18px;
+            line-height: 25px;
+            font-weight: 600;
+        }
+
+        .description {
+            font-size: 16px;
+            margin-bottom: 10px;
+            line-height: 24px;
+            font-weight: 400;
+        }
+
+        textarea {
+            width: 100%;
+            max-width: 100%;
+            height: 100px;
+            padding: 10px;
+            font-family: 'Forum', serif;
+            font-size: 18px;
+            line-height: 24px;
+            border: 1px solid var(--color-primary);
+            background: transparent;
+            color: var(--color-primary);
+            box-sizing: border-box;
+        }
+
+        .scale {
+            display: flex;
+            justify-content: flex-start;
+            margin-top: 10px;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .scale label {
+            cursor: pointer;
+        }
+
+        button {
+            margin-top: 25px;
+            padding: 10px 20px;
+            font-family: 'Forum', serif;
+            font-size: 18px;
+            background: transparent;
+            border: 1px solid var(--color-primary);
+            color: var(--color-primary);
+            cursor: pointer;
+            border-radius: 12px;
+        }
+
+        button:hover {
+            background: var(--color-primary);
+            color: var(--color-secondary);
+        }
+
+        .error {
+            color: red;
+            font-size: 14px;
+            margin-top: 5px;
+        }
+
+        .flower-container {
+            width: 30%;
+            height: 100%;
+            display: flex;
+        }
+
+        .flower-container img {
+            height: 100%;
+            object-fit: cover;
+            width: 100%;
+            object-position: right;
+        }
+
+        .content-container {
+            width: 70%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            display: flex;
+        }
+
+        textarea {
+            resize: none;
+            border-color: var(--color-primary);
+            color: var(--color-primary);
+            background-color: rgba(var(--color-secondary-rgb), 0.2);
+            backdrop-filter: blur(6px);
+            border-width: 1px;
+            border-style: solid;
+            height: 150px;
+            border-radius: 12px;
+            transition: all 0.3s ease-in-out;
+        }
+
+        textarea::placeholder {
+            opacity: 0.5;
+        }
+
+        textarea:hover,
+        textarea:focus {
+            outline-color: var(--color-primary);
+            outline-width: 1px;
+            border-radius: 4px;
+            background-color: rgba(var(--color-secondary-rgb), 0.5);
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease-in-out;
+        }
+
+        .form-container {
+            padding: 36px 30px;
+            background-color: rgba(var(--color-tertiary-rgb), 0.5);
+            box-shadow: 0 4px 30px rgba(var(--color-primary-rgb), 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            margin: 45px 15px;
+        }
+
+        .title-form {
+            font-size: 34px;
+            line-height: 38px;
+            margin: 0px;
+            padding: 0px;
+            font-family: var(--font-secondary);
+        }
+
+        .form-heading {
+            padding: 20px;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 20px;
+            border-radius: 12px;
+        }
+
+        @media (max-width: 768px) {
+            .body-wrapper {
+                flex-direction: column;
+                align-items: center;
+                gap: 10px;
+            }
+
+            .flower-container {
+                order: 2;
+                width: 100%;
+                height: 100%;
+                object-fit: cover;
+                object-position: top;
+                position: fixed;
+            }
+
+            .content-container {
+                order: 1;
+                width: 100%;
+                padding: 10px;
+            }
+
+            .form-container {
+                background-color: rgba(var(--color-tertiary-rgb), 0.8);
+                padding: 24px;
+            }
+
+        }
+
+        #asezarea-in-sala {
+            font-family: Arial, sans-serif;
+        }
+
+        #search-person {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 10px;
+            box-sizing: border-box;
+            border-radius: 4px;
+            border: 1px solid #dfdfdf;
+        }
+
+        #search-person:focus-visible {
+            outline: 0px !important;
+            border: 1px solid #a89e71;
+        }
+
+        #asezarea-in-sala #room-wrapper {
+            width: 100%;
+            height: 800px;
+            border: 2px solid #7a7a7a;
+            position: relative;
+            padding: 4px;
+            z-index: 1;
+        }
+
+        #asezarea-in-sala #room {
+            width: 100%;
+            height: 100%;
+            position: relative;
+        }
+
+        /* TABLE */
+        #asezarea-in-sala .table {
+            position: absolute;
+            width: clamp(35px, 200px, 15%);
+            height: clamp(60px, 8%, 10%);
+            background: #ccc;
+            border-radius: 8px;
+            text-align: center;
+            font-size: 12px;
+            cursor: pointer;
+            transition: 0.2s;
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            justify-content: center;
+            padding: 4px;
+        }
+
+        #asezarea-in-sala .table:hover {
+            transform: scale(1.05);
+            background: #bbb;
+            z-index: 999;
+        }
+
+        /* TOOLTIP */
+        #asezarea-in-sala .tooltip {
+            position-boundary: parent;
+            width: 80px;
+            max-width: min(100%, 250px);
+            /*transform: translateX(-50%);*/
+            display: none;
+            position: absolute;
+            top: 65px;
+            left: auto;
+            right: auto;
+            background: #000;
+            color: #fff;
+            padding: 5px;
+            font-size: 11px;
+            border-radius: 4px;
+            min-width: 120px;
+            z-index: 10;
+        }
+
+        #asezarea-in-sala .table:hover .tooltip,
+        #asezarea-in-sala .table.active .tooltip {
+            display: block;
+        }
+
+        #asezarea-in-sala .table.active .tooltip * {
+            display: none;
+        }
+
+        /* highlight search match */
+        #asezarea-in-sala .highlight {
+            color: lime;
+            font-weight: bold;
+            display: block !important;
+        }
+
+        #room:after {
+            content: "";
+            position: absolute;
+            width: 2px;
+            height: 50%;
+            border-right: 2px dashed #7a7a7a62;
+            background-color: #fff;
+            right: -6px;
+            bottom: 20%;
+        }
+
+        #hall-wrapper {
+            display: flex;
+            flex-direction: row;
+            flex-wrap: nowrap;
+            gap: 0px;
+            background: #fafafa;
+        }
+
+        #hallway {
+            width: 20%;
+            border: 2px solid #7a7a7a;
+            border-left: 0px;
+            position: relative;
+        }
+
+        #hallway::after {
+            content: "";
+            position: absolute;
+            width: 100%;
+            height: 2px;
+            /*border-bottom: 2px dashed #7a7a7a;*/
+            background-color: #fff;
+            right: 0%;
+            left: 0%;
+            bottom: -2px;
+        }
+
+        #hallway::before {
+            content: "";
+            position: absolute;
+            width: 60%;
+            height: 44%;
+            left: -30%;
+            bottom: 23%;
+            background-color: #ffffff00;
+            background-image: linear-gradient(to right,
+                    #7a7a7a83 2px,
+                    #88888800 2px);
+            background-size: 20% 100%;
+            background-repeat: repeat-x;
+            /*border: 2px dashed #7a7a7a;*/
+            z-index: 0;
+            opacity: 0.4;
+        }
+    </style>
+</head>
+
+<body>
+    <div
+        style="width:100%;height:100%;position:fixed;background-color:rgba(var(--color-secondary-rgb), 0.2);background-image:url('assets/backgorund.webp');background-size:cover;background-position:center;background-repeat:no-repeat;z-index: -1;top:0;bottom: 0;left: 0;right: 0">
+    </div>
+    <div class="body-wrapper">
+        <div class="flower-container">
+            <img src="assets/flower-img.webp" alt="Flower">
+        </div>
+        <div class="content-container">
+            <div class="form-container">
+                <div class="form-heading">
+                    <h3 class="title-form"
+                        style="font-family: var(--font-primary);font-size: 20px;line-height: 26px;margin-bottom: 8px;">
+                        Așezarea în Sală</h3>
+                    <h3 class="title-form ">Denis & Ioana</h3>
+                </div>
+                <div id="asezarea-in-sala">
+                    <input type="text" id="search-person" placeholder="Caută persoană..." />
+                    <div id="hall-wrapper">
+                        <div id="room-wrapper">
+                            <div id="room"></div>
+                        </div>
+                        <div id="hallway"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    </div>
+    <script>
+        const CSV_URL =
+            "https://docs.google.com/spreadsheets/d/e/2PACX-1vTxNOn1E8m3i9SupnLhd-7Kftp6yyOpeqhafLuUqo-uT6oIWVN9SzruJ7QtXpQqyPkc2qPf2dn0OheJ/pub?gid=831979182&single=true&output=csv";
+
+        /* ---------------------------
+           SAFE CSV PARSER (IMPORTANT FIX)
+        ----------------------------*/
+        function parseCSV(text) {
+            const lines = text.split("\n").filter(l => l.trim() !== "");
+
+            return lines.map(line => {
+                // handles commas inside values better than split(",")
+                const result = [];
+                let current = "";
+                let inQuotes = false;
+
+                for (let char of line) {
+                    if (char === '"') {
+                        inQuotes = !inQuotes;
+                    } else if (char === "," && !inQuotes) {
+                        result.push(current);
+                        current = "";
+                    } else {
+                        current += char;
+                    }
+                }
+
+                result.push(current);
+                return result.map(c => c.trim());
+            });
+        }
+
+        /* ---------------------------
+           FETCH
+        ----------------------------*/
+        async function fetchCSV() {
+            const res = await fetch(CSV_URL);
+            const text = await res.text();
+            return parseCSV(text);
+        }
+
+        /* ---------------------------
+           PARSE DATA (FIXED LOGIC)
+        ----------------------------*/
+        function parseData(rows) {
+            const people = [];
+            const tables = {};
+
+            rows.forEach(row => {
+                if (!row || row.length < 10) return;
+
+                const name = (row[0] || "").trim();
+                const tableId = (row[2] || "").trim();
+
+                /* -------------------
+                   PEOPLE
+                --------------------*/
+                if (name && tableId && !name.includes("Pers")) {
+                    people.push({
+                        name,
+                        tableId
+                    });
+                }
+
+                /* -------------------
+                   TABLES (FIXED INDEXES)
+                --------------------*/
+                const tableNr = (row[6] || "").trim();
+                const nr = (row[7] || "").trim();
+                const max = (row[9] || "").trim();
+                const status = (row[10] || "").trim();
+                const position = (row[11] || "").trim();
+
+                if (tableNr) {
+                    tables[tableNr] = {
+                        id: tableNr,
+                        nr,
+                        max,
+                        status,
+                        position,
+                        people: []
+                    };
+                }
+            });
+
+            // assign people to tables
+            people.forEach(p => {
+                if (tables[p.tableId]) {
+                    tables[p.tableId].people.push(p.name);
+                }
+            });
+
+            console.log("✔ PEOPLE COUNT:", people.length);
+            console.log("✔ TABLE IDS:", Object.keys(tables));
+            console.log("✔ FINAL TABLES:", tables);
+
+            return tables;
+        }
+
+        /* ---------------------------
+           RENDER
+        ----------------------------*/
+        function renderTables(tables) {
+            const room = document.querySelector("#asezarea-in-sala #room");
+            room.innerHTML = "";
+
+            Object.values(tables).forEach(table => {
+                const el = document.createElement("div");
+                el.className = "table";
+                el.dataset.id = table.id;
+
+                // POSITION FIX
+                if (table.position) {
+                    table.position.split(",").forEach(p => {
+                        const [key, val] = p.split(":");
+                        if (key && val) {
+                            el.style[key.trim()] = val.trim();
+                        }
+                    });
+                }
+
+                el.innerHTML = `
+      <div>Masa ${table.id}</div>
+      <div class="tooltip">
+        ${table.people.length
+                        ? table.people.map(n => `<div>${n}</div>`).join("")
+                        : "<div>Gol</div>"
+                    }
+      </div>
+    `;
+
+                room.appendChild(el);
+            });
+
+            console.log("RENDERED TABLES:", document.querySelectorAll(".table").length);
+        }
+
+        /* ---------------------------
+           SEARCH
+        ----------------------------*/
+        function setupSearch(tables) {
+            const input = document.querySelector("#asezarea-in-sala #search-person");
+
+            input.addEventListener("input", () => {
+                const value = input.value.toLowerCase();
+
+                document.querySelectorAll("#asezarea-in-sala .table").forEach(el => {
+                    el.classList.remove("active");
+
+                    const table = tables[el.dataset.id];
+                    if (!table) return;
+
+                    let found = false;
+
+                    el.querySelector(".tooltip").innerHTML = table.people
+                        .map(name => {
+                            if (value && name.toLowerCase().includes(value)) {
+                                found = true;
+                                return `<div class="highlight">${name}</div>`;
+                            }
+                            return `<div>${name}</div>`;
+                        })
+                        .join("");
+
+                    if (found) el.classList.add("active");
+                });
+            });
+        }
+
+        /* ---------------------------
+           INIT + DEBUG
+        ----------------------------*/
+        (async function init() {
+            try {
+                const rows = await fetchCSV();
+
+                console.log("CSV LOADED OK");
+                console.log("ROWS SAMPLE:", rows.slice(0, 3));
+
+                const tables = parseData(rows);
+
+                renderTables(tables);
+                setupSearch(tables);
+
+                console.log("INIT DONE");
+            } catch (err) {
+                console.error("ERROR LOADING CSV:", err);
+            }
+        })();
+    </script>
+
+</body>
+
+</html>
