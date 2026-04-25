@@ -248,7 +248,8 @@
                     <h3 class="title-form ">Program nunta</h3>
                     <h3 class="title-form ">Denis & Ioana</h3>
                 </div>
-                <div class="list" style="display: flex; flex-direction: column;gap: 0px; align-items: start; ">
+                <div id="list" class="list"
+                    style="display: flex; flex-direction: column;gap: 0px; align-items: start; ">
                     <item style="display: flex;flex-direction: row; gap: 20px;position: relative;min-height:100px">
                         <div class="progress-bar"
                             style="display: flex;flex-direction: row; gap: 10px;align-items: center;">
@@ -513,8 +514,7 @@
                             <text style="width: calc(100% - 55px);">
                                 <h5 class="title-form" style="display: none;">Biserica</h5>
                                 <p class="description" style="font-size: 18px;line-height: 24px; color: #595959">
-                                    Cununia religioasă va avea loc la Catedrala Episcopală „Sfânta
-                                    Treime”, Baia Mare, de la ora 18:00.</p>
+                                    Cununia religioasă</p>
                             </text>
                         </div>
                     </item>
@@ -543,13 +543,129 @@
                             <text style="width: calc(100% - 55px);">
                                 <h5 class="title-form" style="display: none;">Petrecere</h5>
                                 <p class="description" style="font-size: 18px;line-height: 24px; color: #595959">
-                                    Petrecerea va avea loc la Golden Star, Lăpușel, începând cu ora
-                                    19:30.</p>
+                                    Petrecerea</p>
                             </text>
                         </div>
                     </item>
                 </div>
+                <script>
+                    async function populateProgram() {
+                        const csvUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTxNOn1E8m3i9SupnLhd-7Kftp6yyOpeqhafLuUqo-uT6oIWVN9SzruJ7QtXpQqyPkc2qPf2dn0OheJ/pub?gid=1947596368&single=true&output=csv';
+                        const listContainer = document.getElementById('list');
 
+                        try {
+                            const response = await fetch(csvUrl);
+                            const csvText = await response.text();
+
+                            // Parser manual care gestionează corect celulele cu rânduri noi (cum e SVG-ul)
+                            function parseFullCSV(text) {
+                                const lines = [];
+                                let row = [];
+                                let cell = "";
+                                let inQuotes = false;
+
+                                for (let i = 0; i < text.length; i++) {
+                                    let char = text[i];
+                                    let next = text[i + 1];
+
+                                    if (inQuotes && char === '"' && next === '"') {
+                                        cell += '"';
+                                        i++;
+                                    } else if (char === '"') {
+                                        inQuotes = !inQuotes;
+                                    } else if (char === ',' && !inQuotes) {
+                                        row.push(cell);
+                                        cell = "";
+                                    } else if ((char === '\n' || char === '\r') && !inQuotes) {
+                                        if (char === '\r' && next === '\n') i++;
+                                        row.push(cell);
+                                        lines.push(row);
+                                        row = [];
+                                        cell = "";
+                                    } else {
+                                        cell += char;
+                                    }
+                                }
+                                if (row.length > 0 || cell !== "") {
+                                    row.push(cell);
+                                    lines.push(row);
+                                }
+                                return lines;
+                            }
+
+                            const allRows = parseFullCSV(csvText);
+                            const dataRows = allRows.slice(1); // Sărim peste header
+
+                            let htmlContent = '';
+
+                            dataRows.forEach((columns, index) => {
+                                if (columns.length < 3) return;
+
+                                // Curățăm datele primite
+                                const ora = columns[1]?.trim() || '';
+                                const titlu = columns[2]?.trim() || '';
+                                const subtitlu = columns[3]?.trim() || '';
+                                const link = columns[4]?.trim() || '';
+                                let rawSvg = columns[5] || '';
+
+                                // REPARARE SVG: Curățăm ghilimelele reziduale de la exportul CSV
+                                let cleanSvg = rawSvg
+                                    .replace(/^"|"$/g, '') // scoatem ghilimelele de la capete
+                                    .replace(/""/g, '"')   // transformăm "" în "
+                                    .trim();
+
+                                // Verificăm dacă avem un link valid (să nu fie doar string-ul "0" sau gol)
+                                const hasValidLink = link && link !== "0" && link !== "";
+
+                                // Construim Subtitlul (tip <a> dacă are link, altfel <span>)
+                                let subtitluHtml = '';
+                                if (subtitlu && subtitlu !== "0") {
+                                    if (hasValidLink) {
+                                        subtitluHtml = `<br><a href="${link}" target="_blank" style="font-size: 14px; color: #595959; text-decoration: underline; font-weight: 400; display: inline-block; margin-top: 2px;">${subtitlu}</a>`;
+                                    } else {
+                                        subtitluHtml = `<br><span style="font-size: 14px; color: #888; font-weight: 400; display: inline-block; margin-top: 2px;">${subtitlu}</span>`;
+                                    }
+                                }
+
+                                // Stil timeline (prima linie scurtă, restul pline)
+                                const isFirst = index === 0;
+                                const lineStyle = isFirst
+                                    ? "height: 50%; align-self: flex-end;"
+                                    : "height: 100%; align-self: stretch;";
+
+                                // Rendăm elementul
+                                htmlContent += `
+                    <div class="item" style="display: flex; flex-direction: row; gap: 20px; position: relative; min-height: 100px;">
+                        <div class="progress-bar" style="display: flex; flex-direction: row; gap: 10px; align-items: center; position: relative;">
+                            <div class="line" style="display: block; width: 2px; background-color: #595959; ${lineStyle}"></div>
+                            <div class="dot" style="position: absolute; width: 8px; height: 8px; background: #595959; border-radius: 50%; left: 1px; top: 50%; transform: translate(-50%, -50%);"></div>
+                            <div class="ora" style="width: 45px; font-size: ${ora.length > 5 ? '12px' : '16px'}; line-height: 16px; font-weight: 500; color: #595959;">${ora}</div>
+                        </div>
+                        <div class="content" style="display: flex; align-items: center; gap: 15px; margin-bottom: 12px; flex: 1;">
+                            <div class="icon-box" style="width: 40px; height: 40px; flex-shrink: 0; display: flex; align-items: center; justify-content: center;">
+                                ${cleanSvg}
+                            </div>
+                            <div class="text-box" style="flex: 1;">
+                                <p class="description" style="font-size: 18px; line-height: 22px; color: #595959; margin: 0; font-weight: 600;">
+                                    ${titlu}${subtitluHtml}
+                                </p>
+                            </div>
+                        </div>
+                    </div>`;
+                            });
+
+                            listContainer.innerHTML = htmlContent;
+
+                            // Debug în consolă ca să vezi dacă datele ajung corect
+                            console.log("Program încărcat cu succes!");
+
+                        } catch (error) {
+                            console.error('Eroare la procesarea Programului:', error);
+                        }
+                    }
+
+                    window.addEventListener('DOMContentLoaded', populateProgram);
+                </script>
                 <confirmare
                     style="width:100%;display: flex;align-items: center;justify-content: center;flex-direction: column; margin-top: 25px;display: none;">
 
