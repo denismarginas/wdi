@@ -22,9 +22,17 @@
             font-style: normal;
         }
 
+        @font-face {
+            font-family: 'TertiaryFont';
+            src: url('font/TertiaryFont.ttf') format('truetype');
+            font-weight: normal;
+            font-style: normal;
+        }
+
         :root {
             --font-primary: 'PrimaryFont', serif;
             --font-secondary: 'SecondaryFont', serif;
+            --font-tertiary: 'TertiaryFont', serif;
             --color-primary: #595959;
             --color-primary-rgb: 89, 89, 89;
             --color-secondary: #fefcf7;
@@ -233,7 +241,7 @@
         }
 
         #asezarea-in-sala {
-            font-family: Arial, sans-serif;
+            font-family: var(--font-tertiary);
         }
 
         #search-person {
@@ -252,6 +260,7 @@
 
         #asezarea-in-sala #room-wrapper {
             width: 100%;
+            max-width: 300px;
             height: 800px;
             border: 2px solid #d8d8d8;
             position: relative;
@@ -269,15 +278,15 @@
         #asezarea-in-sala .table {
             position: absolute;
             width: clamp(35px, 200px, 15%);
-            height: clamp(60px, 8%, 10%);
+            /*height: clamp(60px, 8%, 10%);*/
             background: #ccc;
             border-radius: 8px;
             text-align: center;
-            font-size: 12px;
+            font-size: 10px;
             cursor: pointer;
             transition: 0.2s;
             display: flex;
-            flex-direction: row;
+            flex-direction: column;
             align-items: center;
             justify-content: center;
             padding: 4px;
@@ -289,6 +298,10 @@
             z-index: 999;
         }
 
+        #asezarea-in-sala .table[data-id="Masa"] {
+            display: none !important;
+        }
+
         /* TOOLTIP */
         #asezarea-in-sala .tooltip {
             position-boundary: parent;
@@ -296,6 +309,8 @@
             max-width: min(100%, 250px);
             /*transform: translateX(-50%);*/
             display: none;
+            flex-direction: column;
+            gap: 4px;
             position: absolute;
             top: 65px;
             left: auto;
@@ -311,7 +326,7 @@
 
         #asezarea-in-sala .table:hover .tooltip,
         #asezarea-in-sala .table.active .tooltip {
-            display: block;
+            display: flex;
         }
 
         #asezarea-in-sala .table.active .tooltip * {
@@ -329,11 +344,12 @@
             content: "";
             position: absolute;
             width: 2px;
-            height: 50%;
+            height: 80%;
             border-right: 2px dashed #7a7a7a62;
             background-color: #fff;
             right: -6px;
-            bottom: 20%;
+            bottom: 10%;
+            top: 15%;
         }
 
         #hall-wrapper {
@@ -342,13 +358,22 @@
             flex-wrap: nowrap;
             gap: 0px;
             background: #fafafa;
+            min-width: 300px;
         }
 
         #hallway {
-            width: 20%;
+            min-width: 20%;
+            width: 40%;
+            max-width: 50%;
             border: 2px solid #d8d8d8;
             border-left: 0px;
             position: relative;
+        }
+
+        @media only screen and (max-width: 500px) {
+            #hallway {
+                display: none;
+            }
         }
 
         #hallway::after {
@@ -364,6 +389,7 @@
         }
 
         #hallway::before {
+            display: none;
             content: "";
             position: absolute;
             width: 60%;
@@ -534,7 +560,8 @@
                 }
 
                 el.innerHTML = `
-      <div>Masa ${table.id}</div>
+      <div class="masa-nume">Masa ${table.id}</div>
+      <div class="masa-nume">${table.max} pers.</div>
       <div class="tooltip">
         ${table.people.length
                         ? table.people.map(n => `<div>${n}</div>`).join("")
