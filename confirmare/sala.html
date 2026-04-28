@@ -541,6 +541,8 @@
            RENDER
         ----------------------------*/
         function renderTables(tables) {
+            const params = new URLSearchParams(window.location.search);
+            const showExtra = params.get("extra") === "da";
             const room = document.querySelector("#asezarea-in-sala #room");
             room.innerHTML = "";
 
@@ -559,9 +561,18 @@
                     });
                 }
 
+                const rawText = table.id;
+                const insideParentheses = rawText.match(/\(([^)]+)\)/)?.[1] || null;
+                const text = rawText.replace(/\s*\([^)]*\)/, '');
                 el.innerHTML = `
-      <div class="masa-nume">Masa ${table.id}</div>
-      <div class="masa-nume">${table.max} pers.</div>
+  <div class="masa-nume">${text}</div>
+  ${showExtra
+                        ? `
+        <div class="masa-nume extra-text">${insideParentheses || ""}</div>
+        <div class="masa-nume extra-text">${table.max} pers.</div>
+      `
+                        : ""
+                    }
       <div class="tooltip">
         ${table.people.length
                         ? table.people.map(n => `<div>${n}</div>`).join("")
